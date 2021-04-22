@@ -36,6 +36,24 @@ class SettingsService {
 
         return settings;
     }
+
+    async findByUsername(username: string){
+        const settings = await this.settingsRepo.findOne({
+            username,
+        });
+
+        return settings;
+    }
+
+    async update(username: string, chat: boolean){
+        //https://typeorm.io/#/update-query-builder
+        await this.settingsRepo
+            .createQueryBuilder()
+            .update(Setting) //entidade
+            .set({chat})
+            .where("username = :username", {username})
+            .execute();
+    }
 }
 
 export { SettingsService }
