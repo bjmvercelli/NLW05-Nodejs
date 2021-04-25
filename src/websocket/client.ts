@@ -1,5 +1,5 @@
 import { io } from "../http"
-import {ConnectionService} from "../services/ConnectionsService"
+import {ConnectionsService} from "../services/ConnectionsService"
 import { MessagesService } from "../services/MessagesService";
 import { UsersService } from "../services/UsersService";
 
@@ -10,7 +10,7 @@ interface IParams {
 }
 
 io.on("connect", (socket) => { //reutilizando a primeira conexão
-    const connectionService = new ConnectionService();
+    const connectionService = new ConnectionsService();
     const userService = new UsersService();
     const messagesService = new MessagesService();
 
@@ -53,8 +53,31 @@ io.on("connect", (socket) => { //reutilizando a primeira conexão
         await messagesService.create({
             text,
             user_id
-        })
+        });
+
+        const allMessages = await messagesService.listByUser(user_id); //listar todas as mensagens do usuário
+
+        socket.emit("client_list_all_messages", allMessages) //emitimos um evento para nosso cliente
         
+        const allUsers = await connectionService.findAllWithoutAdmin();
+        io.emit("admin_list_all_users", allUsers);
     });
 
+    socket.on("client_send_to_admin", async (params) => {
+        const {text, socket_admin_id} = params;
+
+        const socket_id = socket.id;
+
+        const {user_id} = await connectionService.findBySocketID(socket_id);
+
+        const message = await messagesService.create({
+            text,
+            user_id,
+        });
+
+        io.to(socket_admin_id).emit("admin_recieve_message", {
+            message,
+            socket_id,
+        });
+    }); 
 });

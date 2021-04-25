@@ -18,6 +18,10 @@ app.get("/pages/client", (request, response) => {
     return response.render("html/client.html")
 });
 
+app.get("/pages/admin", (request, response) => {
+    return response.render("html/admin.html")
+});
+
 //https://socket.io/docs/v4/server-initialization/
 //https://www.npmjs.com/package/socket.io
 const http = createServer(app); //criando protocolo HTTP

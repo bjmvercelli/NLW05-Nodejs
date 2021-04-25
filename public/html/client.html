@@ -22,11 +22,9 @@
       </div>
 
       <div class="text_support">
-        <script id="email-template" type="text/template">
+        <script id="message-user-template" type="text/template">
           <div class="client">
             <span class="name">{{email}}</span>
-        </script>
-        <script id="message-user-template" type="text/template">
             <span class="client message">
               {{message}}
               <!-- <label class="date">{{date}}</label> -->
@@ -129,6 +127,6 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.4/dayjs.min.js"></script>
-  <script src="https://unpkg.com/mustache@latest"></script>
+  <script src="https://unpkg.com/mustache@latest"></script> <!--permite repassar variáveis-->
   <script src="/js/chat.js"></script>
 </html>
