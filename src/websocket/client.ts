@@ -59,6 +59,25 @@ io.on("connect", (socket) => { //reutilizando a primeira conexão
 
         socket.emit("client_list_all_messages", allMessages) //emitimos um evento para nosso cliente
         
+        const allUsers = await connectionService.findAllWithoutAdmin();
+        io.emit("admin_list_all_users", allUsers);
     });
 
+    socket.on("client_send_to_admin", async (params) => {
+        const {text, socket_admin_id} = params;
+
+        const socket_id = socket.id;
+
+        const {user_id} = await connectionService.findBySocketID(socket_id);
+
+        const message = await messagesService.create({
+            text,
+            user_id,
+        });
+
+        io.to(socket_admin_id).emit("admin_recieve_message", {
+            message,
+            socket_id,
+        });
+    }); 
 });

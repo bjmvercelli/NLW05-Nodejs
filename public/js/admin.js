@@ -1,5 +1,6 @@
 const socket = io(); //conecta assim que carregar a página
 let connectionsUsers = [];
+let connectionInSupport = [];
 
 socket.on("admin_list_all_users", (connections) => {
     connectionsUsers = connections; //passamos as conexões para dentro de um array
@@ -35,6 +36,8 @@ function call(id){ //função chamada na linha 22 do admin.html
         user_id: connection.user_id,
     }
 
+    socket.emit("admin_user_in_support", params);
+
     socket.emit("admin_list_messages_by_user", params, (messages) =>{ //evento, o que queremos enviar, o que queremos receber. o callback nos retornará isso que queremos receber
         
         const divMessages = document.getElementById(`allMessages${connection.user_id}`);
@@ -48,7 +51,7 @@ function call(id){ //função chamada na linha 22 do admin.html
                 
                 createDiv.innerHTML = `<span>${connection.user.email}</span>`;
                 createDiv.innerHTML += `<span>${message.text}</span>`;
-                createDiv.innerHTML += `<span class="admin_date">${dayjs(message.created_at).format("DD/MM/YYYY HH:mm:ss")}` //dayjs está sendo importada no html
+                createDiv.innerHTML += `<span class="admin_date">${dayjs(message.created_at).format("DD/MM/YYYY HH:mm:ss")}</span>` //dayjs está sendo importada no html
             
             } else { //mensagem do admin
                 
@@ -58,8 +61,45 @@ function call(id){ //função chamada na linha 22 do admin.html
                 createDiv.innerHTML += `<span class="admin_date">${dayjs(message.created_at).format("DD/MM/YYYY HH:mm:ss")}`
             }
             divMessages.appendChild(createDiv);
-        })
-
-    })
-    
+        });
+    });
 }
+
+function sendMessage(id){
+    const text = document.getElementById(`send_message_${id}`); //linha 37 admin.html
+
+    const params = {
+        text: text.value,
+        user_id: id
+    }
+
+    socket.emit("admin_send_message", params);
+
+    const divMessages = document.getElementById(`allMessages${id}`);
+
+    const createDiv = document.createElement("div");
+    createDiv.className = "admin_message_admin";            
+    createDiv.innerHTML = `Atendente: <span>${params.text}</span>`;
+    createDiv.innerHTML += `<span class="admin_date">${dayjs().format("DD/MM/YYYY HH:mm:ss")}`;
+
+    divMessages.appendChild(createDiv);
+
+    text.value = "";
+}
+
+socket.on("admin_recieve_message", (data) => {
+    const connection = connectionsUsers.find(
+        (connection) => connection.socket_id == data.socket_id
+    );
+
+    const divMessages = document.getElementById(`allMessages${connection.user_id}`);
+
+    const createDiv = document.createElement("div");
+    
+    createDiv.className = "admin_message_client";
+    createDiv.innerHTML = `<span>${connection.user.email}</span>`;
+    createDiv.innerHTML += `<span>${data.message.text}</span>`;
+    createDiv.innerHTML += `<span class="admin_date">${dayjs(data.message.created_at).format("DD/MM/YYYY HH:mm:ss")}</span>`
+
+    divMessages.appendChild(createDiv);
+});
